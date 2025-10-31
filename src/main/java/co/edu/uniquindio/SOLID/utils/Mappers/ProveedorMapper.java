@@ -16,5 +16,18 @@ public class ProveedorMapper {
             proveedor.isActivo()
         );
     }
+
+    public static Proveedor toEntity(ProveedorDTO dto) {
+        if (dto == null) return null;
+        Proveedor p = new Proveedor(
+                dto.getNit(),
+                dto.getNombre(),
+                dto.getContacto(),
+                dto.getEmail(),
+                dto.getTelefono()
+        );
+        if (dto.getEstado()) p.activar(); else p.inactivar();
+        return p;
+    }
     
 }

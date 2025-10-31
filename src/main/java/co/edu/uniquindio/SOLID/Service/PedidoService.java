@@ -30,6 +30,10 @@ public class PedidoService {
         for (ItemPedidoDTO item : pedidoDTO.itemsPedido) {
             Producto producto = catalogoProductosService.buscarProducto(item.skuProducto);
             if (producto != null) {
+                if (!producto.tieneStockSuficiente(item.cantidad)) {
+                    throw new IllegalArgumentException("Stock insuficiente para SKU: " + producto.getSku());
+                }
+                producto.disminuirStock(item.cantidad);
                 ItemPedido itemPedido = new ItemPedido(producto, item.cantidad);
                 items.add(itemPedido);
             }
