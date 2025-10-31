@@ -1,6 +1,5 @@
 package co.edu.uniquindio.SOLID.Controlador;
 
-import co.edu.uniquindio.SOLID.Model.*;
 import co.edu.uniquindio.SOLID.Model.DTO.*;
 import co.edu.uniquindio.SOLID.Service.Fachadas.MinimercadoFacade;
 import javafx.collections.FXCollections;
@@ -226,37 +225,28 @@ public class PedidoController implements Initializable {
             pedidoDTO.direccionEnvio = txtDireccionEnvio.getText();
             pedidoDTO.notas = txtNotas.getText();
             pedidoDTO.codigoDescuento = txtCodigoDescuento.getText();
-            
-            // Procesar pedido usando el Facade
-            ResumenPedidoDTO resultado = minimercadoFacade.procesarPedido(pedidoDTO);
-            
-            // Calcular totales
-            double subtotal = calcularSubtotal();
-            double costoEnvio = calcularCostoEnvio();
-            double total = minimercadoFacade.calcularTotal(subtotal, costoEnvio);
-            
-            // Mostrar resultado
+
+            // Procesar pedido usando la lógica simple del Facade
+            ResumenPedidoDTO resultado = minimercadoFacade.procesarPedidoSimple(pedidoDTO);
+
+            // Mostrar resultado usando el resumen devuelto
             txtResultado.setText(
                 "PEDIDO PROCESADO EXITOSAMENTE\n\n" +
                 "Código: " + resultado.codigo + "\n" +
                 "Cliente: " + cmbClientes.getValue().getNombre() + "\n" +
                 "Items: " + itemsPedido.size() + "\n" +
-                "Subtotal: $" + String.format("%.2f", subtotal) + "\n" +
-                "Envío " + cmbTipoEnvio.getValue() + ": $" + String.format("%.2f", costoEnvio) + "\n" +
-                "Total: $" + String.format("%.2f", total) + "\n" +
-                "Método de pago: " + cmbMetodoPago.getValue() + "\n" +
-                "Notificación enviada por: " + cmbTipoNotificacion.getValue()
+                "Subtotal: $" + String.format("%.2f", resultado.subtotal) + "\n" +
+                "Envío " + (resultado.tipoEnvio != null ? resultado.tipoEnvio : cmbTipoEnvio.getValue()) + ": $" + String.format("%.2f", resultado.costoEnvio) + "\n" +
+                "Total: $" + String.format("%.2f", resultado.total) + "\n" +
+                "Método de pago: " + (resultado.metodoPago != null ? resultado.metodoPago : cmbMetodoPago.getValue()) + "\n" +
+                "Notificación enviada por: " + (resultado.tipoNotificacion != null ? resultado.tipoNotificacion : cmbTipoNotificacion.getValue())
             );
-            
+
             System.out.println("Pedido procesado exitosamente: " + resultado.codigo);
-            
+
             // Limpiar formulario después de procesar
             limpiarFormulario(event);
-            
-        } catch (IllegalArgumentException e) {
-            // Errores de negocio (por ejemplo, stock insuficiente)
-            mostrarError(e.getMessage());
-            txtResultado.setText("");
+
         } catch (Exception e) {
             txtResultado.setText("ERROR AL PROCESAR PEDIDO:\n" + e.getMessage());
             e.printStackTrace();

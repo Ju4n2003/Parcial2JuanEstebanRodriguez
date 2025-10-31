@@ -4,6 +4,8 @@ import co.edu.uniquindio.SOLID.Model.EntradaInventario;
 import co.edu.uniquindio.SOLID.Model.Minimercado;
 import co.edu.uniquindio.SOLID.Model.Producto;
 import co.edu.uniquindio.SOLID.Model.Proveedor;
+import co.edu.uniquindio.SOLID.Model.DTO.EntradaInventarioDTO;
+import co.edu.uniquindio.SOLID.Service.Fachadas.MinimercadoFacade;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -34,9 +36,11 @@ public class InventarioController implements Initializable {
     private ObservableList<Proveedor> proveedores;
     private ObservableList<Producto> productos;
     private Minimercado minimercado = Minimercado.getInstancia();
+    private MinimercadoFacade facade;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        facade = new MinimercadoFacade();
         proveedores = FXCollections.observableArrayList(minimercado.getProveedores());
         productos = FXCollections.observableArrayList(minimercado.getProductos());
         
@@ -162,23 +166,19 @@ public class InventarioController implements Initializable {
         Proveedor proveedor = cmbProveedores != null ? cmbProveedores.getValue() : null;
         Producto prod = cmbProductoEntrada != null ? cmbProductoEntrada.getValue() : null;
         Integer cant = spnCantidadEntrada != null ? spnCantidadEntrada.getValue() : 0;
-        
+
         // Validaciones de campos
-        if (proveedor == null) {
-            mostrarError("Seleccione un proveedor");
-            return;
-        }
-        if (prod == null) {
-            mostrarError("Seleccione un producto");
-            return;
-        }
-        if (cant == null || cant <= 0) {
-            mostrarError("Cantidad inválida");
-            return;
-        }
-        
+        if (proveedor == null) { mostrarError("Seleccione un proveedor"); return; }
+        if (prod == null) { mostrarError("Seleccione un producto"); return; }
+        if (cant == null || cant <= 0) { mostrarError("Cantidad inválida"); return; }
+
         try {
-            minimercado.registrarEntradaInventario(proveedor, prod, cant);
+            EntradaInventarioDTO dto = new EntradaInventarioDTO();
+            dto.setNitProveedor(proveedor.getNit());
+            dto.setSkuProducto(prod.getSku());
+            dto.setCantidad(cant);
+            facade.registrarEntradaSimple(dto);
+
             if (lblResultadoEntrada != null) lblResultadoEntrada.setText("Entrada confirmada. Stock " + prod.getSku() + ": " + prod.getStock());
             if (tblProductosInv != null) tblProductosInv.refresh();
         } catch (IllegalArgumentException e) {
