@@ -63,8 +63,10 @@ public class InventarioController implements Initializable {
             colInvSku.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(cd.getValue().getSku()));
             colInvNombre.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(cd.getValue().getNombre()));
             colInvPrecio.setCellValueFactory(cd -> new javafx.beans.property.SimpleDoubleProperty(cd.getValue().getPrecio()));
-            // El stock no está en ProductoDTO actual; lo dejamos en blanco o 0 para UI de solo lectura
-            colInvStock.setCellValueFactory(cd -> new javafx.beans.property.SimpleIntegerProperty(0));
+            // Consultar stock real por SKU a través de la fachada
+            colInvStock.setCellValueFactory(cd -> new javafx.beans.property.SimpleIntegerProperty(
+                facade.consultarStock(cd.getValue().getSku())
+            ));
             tblProductosInv.setItems(productos);
         }
         if (tpCrearProveedor != null) tpCrearProveedor.setExpanded(false);
@@ -181,7 +183,9 @@ public class InventarioController implements Initializable {
             dto.setCantidad(cant);
             facade.registrarEntrada(dto);
 
-            if (lblResultadoEntrada != null) lblResultadoEntrada.setText("Entrada confirmada para producto " + prod.getSku());
+            // Mostrar stock actualizado en la etiqueta
+            int stockActual = facade.consultarStock(prod.getSku());
+            if (lblResultadoEntrada != null) lblResultadoEntrada.setText("Entrada confirmada. Stock " + prod.getSku() + ": " + stockActual);
             if (tblProductosInv != null) tblProductosInv.refresh();
         } catch (IllegalArgumentException e) {
             mostrarError(e.getMessage());
